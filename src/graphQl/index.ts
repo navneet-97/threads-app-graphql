@@ -15,6 +15,9 @@ export async function createGraphQlApolloServer() {
             }
         `,
         resolvers: {
+            Thread: {
+                ...User.resolvers.threads
+            },
             Query: {
                 ...User.resolvers.queries
             },

@@ -13,13 +13,24 @@ datasource db {
 }
 
 model User {
-  id              String  @id @default(uuid())
-  firstName       String  @map("first_name")
-  lastName        String? @map("last_name")
-  profileImageURL String? @map("profile_image_url")
-  email           String  @unique
+  id              String   @id @default(uuid())
+  firstName       String   @map("first_name")
+  lastName        String?  @map("last_name")
+  profileImageURL String?  @map("profile_image_url")
+  email           String   @unique
   password        String
   salt            String
+  threads         Thread[]
 
   @@map("users")
+}
+
+model Thread {
+  id          String @id @default(uuid())
+  title       String @unique
+  content     String
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  @@map("threads")
 }

@@ -15,13 +15,19 @@ export interface GetUserTokenPayload {
     password: string;
 }
 
+export interface CreateThreadPayload {
+    title: string;
+    content: string;
+    createdById: string;
+}
+
 class UserService {
     private static hashPassword(password: string, salt: string) {
         return createHmac('sha256', salt)
             .update(password)
             .digest('hex')
-
     }
+
     public static createUser(payload: CreateUserPayload) {
         const { firstName, lastName, email, password } = payload
         const salt = randomBytes(16).toString()
@@ -36,9 +42,11 @@ class UserService {
             }
         })
     }
+
     private static getUserByEmail(email: string) {
         return prisma.user.findUnique({ where: { email } })
     }
+
     public static async getUserToken(payload: GetUserTokenPayload) {
         const { email, password } = payload
         const user = await this.getUserByEmail(email);
@@ -55,6 +63,7 @@ class UserService {
             firstName: user.firstName
         }, secret)
     }
+
     public static decodeJWTToken(token: any) {
         try {
             return jwt.verify(token, secret);
@@ -65,6 +74,29 @@ class UserService {
 
     public static getUserById(id: string) {
         return prisma.user.findUnique({ where: { id } })
+    }
+
+    public static createThread(payload: CreateThreadPayload) {
+        const { title, content, createdById } = payload
+        return prisma.thread.create({
+            data: {
+                title,
+                content,
+                createdById,
+            }
+        })
+    }
+
+    public static async getAllThreads() {
+        return await prisma.thread.findMany({});
+    }
+
+    public static async getAllThreadsByUserId(id: string) {
+        return await prisma.thread.findMany({ where: { createdById: id } });
+    }
+    
+    public static async getAllUsers(){
+        return await prisma.user.findMany({});
     }
 }
 
