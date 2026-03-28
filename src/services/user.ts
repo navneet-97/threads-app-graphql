@@ -94,9 +94,44 @@ class UserService {
     public static async getAllThreadsByUserId(id: string) {
         return await prisma.thread.findMany({ where: { createdById: id } });
     }
-    
-    public static async getAllUsers(){
+
+    public static async getAllUsers() {
         return await prisma.user.findMany({});
+    }
+
+    public static async getLikesCount(id: string) {
+        return await prisma.like.count({
+            where: {
+                threadId: id
+            }
+        })
+    }
+
+    public static async checkCurrentUserLikeOnThread(userId: string, threadId: string) {
+        return await prisma.like.findFirst({
+            where: {
+                userId, threadId
+            }
+        })
+    }
+
+    public static async createLike(userId: string, threadId: string) {
+        await prisma.like.create({
+            data: {
+                userId,
+                threadId,
+            }
+        })
+    }
+
+    public static async deleteLike(userId: string, threadId: string) {
+        await prisma.like.delete({
+            where: {
+                userId_threadId: {
+                    userId, threadId
+                }
+            }
+        })
     }
 }
 

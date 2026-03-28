@@ -12,6 +12,8 @@ export const typeDefs = `
         title: String!
         content: String!
         createdBy: User!
+        likesCount: Int!
+        isLiked: Boolean!
     }
 
     input CreateUserInput {
