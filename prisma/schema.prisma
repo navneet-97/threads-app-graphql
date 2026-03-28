@@ -21,6 +21,7 @@ model User {
   password        String
   salt            String
   threads         Thread[]
+  likes           Like[]
 
   @@map("users")
 }
@@ -31,6 +32,19 @@ model Thread {
   content     String
   createdById String
   createdBy   User   @relation(fields: [createdById], references: [id])
+  likes       Like[]
 
   @@map("threads")
+}
+
+model Like {
+  id       String @id @default(uuid())
+  userId   String
+  threadId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  thread Thread @relation(fields: [threadId], references: [id])
+
+  @@unique([userId, threadId])
+  @@map("likes")
 }
