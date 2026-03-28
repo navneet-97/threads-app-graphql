@@ -4,17 +4,21 @@ export const resolvers = {
     threads: {
         createdBy: async (parent: any) => {
             return await UserService.getUserById(parent.createdById)
+        },
+        likesCount: async (parent: any) => {
+            return await UserService.getLikesCount(parent.id);
+        },
+        isLiked: async (parent: any, _: any, user: any) => {
+            if (!user) return new Error("Unauthorized");
+            const like = await UserService.checkCurrentUserLikeOnThread(user.id, parent.id);
+            return !!like
         }
     },
 
     queries: {
-        getCurrentLoggedInUser: async (_: any, parameters: any, context: any) => {
-            if (context && context.id) {
-                const user = await UserService.getUserById(context.id)
-                return user;
-            } else {
-                throw new Error('Wrong JWT Token')
-            }
+        getCurrentLoggedInUser: async (_: any, parameters: any, user: any) => {
+            if (!user) throw new Error('Unauthorized');
+            return await UserService.getUserById(user.id);
         },
 
         getUserToken: async (_: any, payload: { email: string, password: string }) => {
@@ -26,12 +30,10 @@ export const resolvers = {
             return await UserService.getAllThreads();
         },
 
-        getLoggedInUserThreads: async (_: any, parameters: any, context: any) => {
-            if (context && context.id) {
-                return await UserService.getAllThreadsByUserId(context.id)
-            } else {
-                throw new Error('Login First')
-            }
+        getLoggedInUserThreads: async (_: any, parameters: any, user: any) => {
+            if (!user) throw new Error('Unauthorized');
+            return await UserService.getAllThreadsByUserId(user.id)
+
         },
 
         getAllUsers: async () => {
@@ -48,10 +50,22 @@ export const resolvers = {
             const res = await UserService.createUser(input)
             return res.id;
         },
-        createThread: async (_: any, { input }: { input: CreateThreadPayload }, context: any) => {
-            if (context && context.id) {
-                const res = await UserService.createThread({ ...input, createdById: context.id })
-                return res.id;
+
+        createThread: async (_: any, { input }: { input: CreateThreadPayload }, user: any) => {
+            if (!user) throw new Error('Unauthorized');
+            const res = await UserService.createThread({ ...input, createdById: user.id })
+            return res.id;
+        },
+
+        toggleLike: async (_: any, { threadId }: any, user: any) => {
+            if (!user || !user.id) throw new Error("Unauthorized")
+            const existing = await UserService.checkCurrentUserLikeOnThread(user.id, threadId)
+            if (existing) {
+                await UserService.deleteLike(user.id, threadId)
+                return false
+            } else {
+                await UserService.createLike(user.id, threadId)
+                return true
             }
         }
     }

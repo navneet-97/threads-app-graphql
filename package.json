@@ -1,11 +1,12 @@
 {
   "name": "threads-app-graphql",
   "version": "1.0.0",
-  "description": "",
+  "description": "GraphQL backend for a Threads-like application using Node, Prisma, and PostgreSQL.",
   "type": "module",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "start": "node build/index.js",
     "dev": "tsc-watch --onSuccess \"npm start\""
   },
